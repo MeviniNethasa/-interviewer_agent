@@ -1,0 +1,71 @@
+scan_task:
+  description: >
+    Conduct a rigorous, feature-by-feature analysis of the candidate's CV text: "{cv_text}" 
+    and compare it directly against the target Job Description: "{job_description}".
+
+    Your analysis must explicitly extract:
+    1. Perfect Alignment: Hard technical skills and tools that match both documents exactly.
+    2. Subtle Skill Gaps: Frame names, tool ecosystem variations, or architectural gaps (e.g., candidate knows Flask, but the job requires FastAPI microservices).
+    3. Experience & Tenure Variances: Years of practical experience vs. the seniority requested in the job description.
+    4. Vulnerabilities: Vague descriptions or lack of concrete metrics in their past achievements.
+  expected_output: >
+    A well-structured, professional recruitment gap-report in Markdown format containing:
+    - An executive alignment summary.
+    - A bulleted list of 3-5 critical technical/domain vulnerabilities that must be rigorously tested in the next phase.
+  agent: cv_scanner
+
+generate_questions_task:
+  description: >
+    Review the complete output of the scan_task. Your goal is to design a targeted, non-generic primary interview assessment.
+
+    Using the 3-5 technical vulnerabilities identified by the scanner, generate exactly 3 highly specific interview questions.
+    
+    Your questions must avoid generic templates (e.g., DO NOT ask "What are your strengths?"). Instead, formulate context-driven questions:
+    1. Question 1: A deep technical scenario targeting their biggest software/tool stack gap.
+    2. Question 2: An architectural design choice problem forcing them to justify their practical engineering methodologies.
+    3. Question 3: A behavioral situational question testing how they handle constraints or legacy systems related to this role.
+  expected_output: >
+    A list of exactly 3 numbered, high-impact interview questions tailored specifically to break past superficial surface answers.
+  agent: primary_interviewer
+
+followup_task:
+  description: >
+    Review the candidate's raw, verbatim interview transcript answers: "{candidate_answers}".
+    
+    Analyze these responses critically to identify signs of evasion, superficiality, or AI-generated generalities. Your review must look for:
+    1. Missing specifics: Did they omit metrics, scale, or implementation steps?
+    2. Evasive logic: Did they talk around the engineering problem without answering it?
+    
+    Generate exactly 2 sharp, assertive follow-up questions. Your follow-up questions should pin them down to specific choices, requiring real-world metrics, design tradeoffs, or troubleshooting paths based on what they just claimed.
+  expected_output: >
+    A detailed cross-examination breakdown in Markdown format detailing:
+    - Criticisms of their primary answers.
+    - Exactly 2 follow-up probing questions designed to test their true technical depth.
+  agent: followup_interviewer
+
+
+score_task:
+  description: >
+    Conduct an exhaustive HR audit of the complete evaluation history, including:
+    - The initial CV content: "{cv_text}"
+    - The target Job Description: "{job_description}"
+    - The primary questions asked: "{primary_questions_report}"
+    - The candidate's primary answers: "{candidate_answers}"
+    - The dynamic follow-up questions that were asked: "{followup_report}"
+    - The candidate's specific responses to those follow-up questions: "{followup_answers}"
+
+    You must evaluate the candidate across 4 key dimensions:
+    1. Technical Stack Match (1-10)
+    2. Problem-Solving & Depth (1-10)
+    3. Communication Clarity (1-10)
+    4. Role Alignment & Seniority (1-10)
+
+    For every single score given, you are strictly required to provide an explicit justification backed by verbatim quotes or direct behavioral evidence from the text transcripts provided above. If they failed to answer a follow-up or were vague, penalize heavily.
+  expected_output: >
+    A comprehensive, publication-grade Final Candidate Scorecard in clean Markdown format containing:
+    - A structured table with numerical scores across all 4 dimensions, plus an aggregated Final Score (1-10).
+    - An 'Evidence & Justification' section utilizing verbatim quotes from the text to justify the scores.
+    - Core Strengths and Critical Flaws sections.
+    - A definitive hiring recommendation verdict: [STRONG HIRE / PASS / NO HIRE].
+  agent: grading_panel
+
