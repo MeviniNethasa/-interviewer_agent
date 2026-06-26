@@ -24,24 +24,23 @@ Unlike traditional machine learning recruitment systems, this project implements
 
 Candidate CV + Job Description
 
-──────────────────────────────────────────
 Crew 1 – Question Generation Team
-──────────────────────────────────────────
+
 • CV Scanner Agent
 • Primary Interviewer Agent
 
 Human answers technical interview questions
 
-──────────────────────────────────────────
+
 Crew 2 – Cross Examination Team
-──────────────────────────────────────────
+
 • Follow-up Interviewer Agent
 
 Human answers follow-up questions
 
-──────────────────────────────────────────
+
 Crew 3 – HR Compliance & Grading Team
-──────────────────────────────────────────
+
 • Grading Panel Agent
 
 candidate_assessment.md
