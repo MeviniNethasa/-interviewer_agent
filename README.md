@@ -23,38 +23,27 @@ Unlike traditional machine learning recruitment systems, this project implements
 #  System Architecture
 
 Candidate CV + Job Description
-             │
-             ▼
+
 ──────────────────────────────────────────
 Crew 1 – Question Generation Team
 ──────────────────────────────────────────
 • CV Scanner Agent
 • Primary Interviewer Agent
 
-             │
-             ▼
 Human answers technical interview questions
 
-             │
-             ▼
 ──────────────────────────────────────────
 Crew 2 – Cross Examination Team
 ──────────────────────────────────────────
 • Follow-up Interviewer Agent
 
-             │
-             ▼
 Human answers follow-up questions
 
-             │
-             ▼
 ──────────────────────────────────────────
 Crew 3 – HR Compliance & Grading Team
 ──────────────────────────────────────────
 • Grading Panel Agent
 
-             │
-             ▼
 candidate_assessment.md
 
 #  AI Agent Workflow
@@ -142,32 +131,6 @@ Generate Hiring Assessment
 
 ---
 
-# 📂 Project Structure
-
-interviewer_agent/
-│
-├── .venv/
-│
-├── output/
-│   └── candidate_assessment.md
-│
-├── src/
-│   └── interviewer_agent/
-│       │
-│       ├── crews/
-│       │   └── interview_crew/
-│       │       ├── config/
-│       │       │   ├── agents.yaml
-│       │       │   └── tasks.yaml
-│       │       │
-│       │       └── interview_crew.py
-│       │
-│       └── main.py
-│
-├── interview_flow_chart.html
-│
-└── pyproject.toml
----
 
 #  Installation
 
