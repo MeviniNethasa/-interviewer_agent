@@ -1,54 +1,196 @@
-# InterviewerAgent Crew
+#  Enterprise AI Hiring Platform using CrewAI Flows & Google Gemini 2.5 Flash
 
-Welcome to the InterviewerAgent Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+An enterprise-grade multi-agent AI hiring platform that conducts structured technical interviews using CrewAI Flows, Google Gemini 2.5 Flash, and a Human-in-the-Loop (HITL) workflow.
 
-## Installation
+Unlike traditional machine learning recruitment systems, this project implements a dynamic sequential multi-agent architecture, where specialized AI agents collaborate to analyze candidate resumes, generate interview questions, conduct follow-up questioning, and produce evidence-based hiring assessments.
 
-Ensure you have Python >=3.10 <3.14 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+---
 
-First, if you haven't already, install uv:
+##  Features
 
-```bash
-pip install uv
-```
+- 📄 Resume (CV) Analysis
+- 💼 Job Description Matching
+- 🤖 Multi-Agent Interview Pipeline using CrewAI
+- 👤 Human-in-the-Loop Interactive Interview
+- 🎯 Context-aware Technical & Behavioral Question Generation
+- 🔍 Intelligent Cross-Examination Based on Candidate Responses
+- 📊 Multi-Dimensional Candidate Evaluation
+- 📝 Automated Markdown Assessment Report
+- ⚡ Powered by Google Gemini 2.5 Flash
 
-Next, navigate to your project directory and install the dependencies:
+---
 
-(Optional) Lock the dependencies and install them by using the CLI command:
-```bash
-crewai install
-```
-### Customizing
+#  System Architecture
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+Candidate CV + Job Description              │              ▼ ────────────────────────────────────────── Crew 1 – Question Generation Team ────────────────────────────────────────── • CV Scanner Agent • Primary Interviewer Agent               │              ▼ Human answers technical interview questions               │              ▼ ────────────────────────────────────────── Crew 2 – Cross Examination Team ────────────────────────────────────────── • Follow-up Interviewer Agent               │              ▼ Human answers follow-up questions               │              ▼ ────────────────────────────────────────── Crew 3 – HR Compliance & Grading Team ────────────────────────────────────────── • Grading Panel Agent               │              ▼ candidate_assessment.md
 
-- Modify `src/interviewer_agent/config/agents.yaml` to define your agents
-- Modify `src/interviewer_agent/config/tasks.yaml` to define your tasks
-- Modify `src/interviewer_agent/crew.py` to add your own logic, tools and specific args
-- Modify `src/interviewer_agent/main.py` to add custom inputs for your agents and tasks
+---
 
-## Running the Project
+#  AI Agent Workflow
 
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
+## Crew 1 – Question Generation Team
 
-```bash
-$ crewai run
-```
+### CV Scanner Agent
+- Extracts relevant technical skills from the resume
+- Compares candidate experience against the job description
+- Identifies missing technologies and potential skill gaps
 
-This command initializes the interviewer_agent Crew, assembling the agents and assigning them tasks as defined in your configuration.
+### Primary Interviewer Agent
+- Generates three contextual interview questions
+- Combines technical, behavioral, and scenario-based questions
+- Avoids generic interview prompts
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+---
 
-## Understanding Your Crew
+## Crew 2 – Cross-Examination Team
 
-The interviewer_agent Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+### Follow-up Interviewer Agent
+- Evaluates candidate responses
+- Detects shallow or incomplete explanations
+- Generates targeted probing questions
+- Challenges technical reasoning with deeper follow-ups
 
-## Support
+---
 
-For support, questions, or feedback regarding the InterviewerAgent Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
+## Crew 3 – HR Compliance & Audit Team
 
-Let's create wonders together with the power and simplicity of crewAI.
+### Grading Panel Agent
+Produces a structured hiring assessment using:
+
+- Stack Match
+- Problem Solving Ability
+- Communication Skills
+- Experience & Seniority
+
+Every evaluation is supported using verbatim candidate quotes, ensuring transparent and explainable AI decision making.
+
+---
+
+#  Human-in-the-Loop Workflow
+
+The application pauses at predefined checkpoints to collect live candidate responses before continuing the AI workflow.
+
+Resume + JD       │       ▼ Generate Questions       │       ▼ Wait for Candidate Responses       │       ▼ Generate Follow-up Questions       │       ▼ Wait for Follow-up Responses       │       ▼ Generate Hiring Assessment
+
+---
+
+#  Tech Stack
+
+### AI Framework
+- CrewAI
+- CrewAI Flows
+
+### Large Language Model
+- Google Gemini 2.5 Flash
+
+### Programming Language
+- Python 3.12+
+
+### Configuration
+- YAML
+- Pydantic
+
+### Package Management
+- uv
+
+### Output
+- Markdown Reports
+
+---
+
+# 📂 Project Structure
+
+interviewer_agent/ │ ├── .venv/ │ ├── output/ │   └── candidate_assessment.md │ ├── src/ │   └── interviewer_agent/ │       │ │       ├── crews/ │       │   └── interview_crew/ │       │       ├── config/ │       │       │   ├── agents.yaml │       │       │   └── tasks.yaml │       │       │ │       │       └── interview_crew.py │       │ │       └── main.py │ ├── interview_flow_chart.html │ └── pyproject.toml
+
+---
+
+#  Installation
+
+Clone the repository
+
+bash git clone https://github.com/yourusername/interviewer-agent.git 
+
+Navigate into the project
+
+bash cd interviewer-agent 
+
+Install dependencies
+
+bash uv sync 
+
+Configure your Google AI Studio API key
+
+bash GEMINI_API_KEY=your_api_key 
+
+Run the application
+
+bash python src/interviewer_agent/main.py 
+
+---
+
+#  Example Workflow
+
+1. Provide the candidate resume.
+2. Provide the job description.
+3. AI generates interview questions.
+4. Candidate answers interactively.
+5. AI performs cross-examination.
+6. Candidate answers follow-up questions.
+7. AI generates a comprehensive hiring assessment.
+8. Report is saved as:
+
+output/candidate_assessment.md
+
+---
+
+#  Key Design Principles
+
+- Sequential Multi-Agent Collaboration
+- Human-in-the-Loop Decision Making
+- Explainable AI
+- Context-Aware Interviewing
+- Deterministic Evaluation
+- Modular Crew Architecture
+- Evidence-Based Candidate Assessment
+
+---
+
+#  Future Improvements
+
+- Voice-based interviews using Speech-to-Text
+- Video interview support
+- Retrieval-Augmented Generation (RAG) for company-specific knowledge
+- PDF report generation
+- Candidate scoring dashboard
+- ATS integration
+- Multi-language interview support
+- Web-based interface with Streamlit or React
+
+---
+
+#  Learning Outcomes
+
+This project demonstrates practical experience with:
+
+- Multi-Agent AI Systems
+- CrewAI Flows
+- Agent Orchestration
+- Prompt Engineering
+- Human-in-the-Loop AI
+- LLM Application Development
+- Workflow Automation
+- Context Management with Pydantic
+- Google Gemini API Integration
+- Explainable AI for Recruitment
+
+---
+
+# 👤 Author
+
+Mevini Munaweera
+
+Data Science Undergraduate 
+
+LinkedIn: https://www.linkedin.com/in/mevini-munaweera
+
+GitHub: MeviniNethasa
