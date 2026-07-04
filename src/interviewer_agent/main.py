@@ -1,0 +1,209 @@
+#!/usr/bin/env python
+import json
+import os
+import time
+from typing import List, Dict
+from pydantic import BaseModel
+from crewai import LLM
+from crewai.flow.flow import Flow, listen, start
+from interviewer_agent.crews.interview_crew.interview_crew import InterviewCrew
+from dotenv import load_dotenv 
+
+load_dotenv() 
+
+# Define our flow state tracking keys
+class InterviewState(BaseModel):
+    job_description: str = ""
+    cv_text: str = ""
+    primary_questions_report: str = ""
+    primary_answers: str = ""
+    followup_questions_report: str = ""
+    followup_answers: str = ""
+    final_scorecard: str = ""
+    is_mock_mode:bool=False
+
+
+class InterviewFlow(Flow[InterviewState]):
+    """Flow for creating a 4-agent automated interview system"""
+
+    @start()
+    def get_user_input(self):
+        """step 1: Get user input for job description and CV text"""
+
+
+        mode_choice = input("Select Run Mode: (1) Live Google Gemini API  (2) Fast Local Simulation [Mock]: ")
+        if mode_choice.strip() == "2":
+            self.state.is_mock_mode = True
+            print("[SYSTEM]: Local Simulation Mode active. Zero API quota will be consumed.")
+        else:
+            print("[SYSTEM]: Live Gemini Mode active. Adhering to strict free-tier rate limits.")
+
+        # Get user input matching your preferred structure
+        self.state.job_description = input("Please enter the job description: ")
+        self.state.cv_text = input("Please enter the candidate's CV text: ")
+
+        print("\n[SYSTEM]: User input received. Proceeding to question generation...\n")
+        return self.state
+
+    @listen(get_user_input)
+    def generate_primary_questions(self):  
+        """run crew 1: Generate primary interview questions based on the job description and CV"""
+        print("[SYSTEM]: Generating primary questions via Crew 1...")
+
+        if self.state.is_mock_mode:
+            time.sleep(1) # Simulates background execution latency
+            self.state.primary_questions_report = (
+                "1. Describe your experience with Python frameworks like FastAPI.\n"
+                "2. How do you design schema models for relational databases?\n"
+                "3. Detail a time you encountered undocumented technical debt."
+            )
+        else:
+            time.sleep(3) # Safe rate-limit buffer break
+            interview_crew = InterviewCrew()
+            result = interview_crew.question_generation_crew().kickoff(inputs={
+                "job_description": self.state.job_description,
+                "cv_text": self.state.cv_text,
+                "primary_answers": "Pending collection in the next step"
+            })
+            self.state.primary_questions_report = result.raw
+
+        print(self.state.primary_questions_report)
+      
+        return self.state
+
+    @listen(generate_primary_questions)
+    def conduct_primary_interview(self):
+        """collect candidate answers to the primary questions and run crew 2: Generate follow-up questions based on the candidate's answers"""
+        print("--- [LIVE CANDIDATE RESPONSE PHASE: PRIMARY] ---")
+
+        user_primary_input = ""
+        while not user_primary_input.strip():
+            user_primary_input = input("Please enter the candidate's answers to the primary questions: ")
+        self.state.primary_answers = user_primary_input
+
+        print("\n[SYSTEM]: Analyzing answers. Deploying Follow-Up Agent via Crew 2...")
+
+        return self.state
+    
+    @listen(conduct_primary_interview)
+    def generate_followup_questions(self):
+        """run crew 2 and print out follow up questions"""
+        print("--- [Analyzing answers.Deploying followup agent] ---")
+
+        inputs = {
+            "cv_text": self.state.cv_text,
+            "job_description": self.state.job_description,
+            "primary_answers": self.state.primary_answers
+        }
+
+        if self.state.is_mock_mode:
+            time.sleep(1)
+            self.state.followup_questions_report = (
+                "1. Why did you prioritize dynamic data models over static structures?\n"
+                "2. How do you mitigate memory lock overhead under heavy I/O load?"
+            )
+        else:
+            time.sleep(3) # Safe rate-limit buffer break
+            result = InterviewCrew().followup_generation_crew().kickoff(inputs=inputs)
+            self.state.followup_questions_report = result.raw
+
+        print(self.state.followup_questions_report)
+        return self.state
+
+    @listen(generate_followup_questions)
+    def conduct_followup_interview(self):
+        """collect candidate answers to the follow-up questions safely"""
+        print("--- [LIVE CANDIDATE RESPONSE PHASE: FOLLOW-UP] ---")
+
+        user_followup_input = ""
+        while not user_followup_input.strip():
+            user_followup_input = input("Please enter the candidate's answers to the follow-up questions: ")
+
+        
+        self.state.followup_answers = user_followup_input
+
+        print("\n[SYSTEM]: Follow-up answers captured. Moving to final evaluation...\n")
+        return self.state
+    
+    @listen(conduct_followup_interview)
+    def run_final_grading(self):
+        """run crew 3: Generate final scorecard based on all inputs"""
+        print("\n[SYSTEM]: Submitting complete transcript to the Grading Panel via Crew 3...")
+
+        inputs = {
+            "cv_text": self.state.cv_text,
+            "job_description": self.state.job_description,
+            "primary_questions_report": self.state.primary_questions_report,
+            "primary_answers": self.state.primary_answers,
+            "followup_questions_report": self.state.followup_questions_report,
+            "followup_answers": self.state.followup_answers
+        }
+
+        if self.state.is_mock_mode:
+            time.sleep(1)
+            self.state.final_scorecard = (
+                f"# 📋 Final Candidate Evaluation Scorecard\n\n"
+                f"### 📊 Evaluation Rubric Metrics Matrix\n"
+                f"| Evaluation Parameter Dimension | Assessed Rating (1-10) |\n"
+                f"| :--- | :--- |\n"
+                f"| Technical Stack Match | 8 / 10 |\n"
+                f"| Problem-Solving & Depth | 7 / 10 |\n"
+                f"| Communication Clarity | 9 / 10 |\n"
+                f"| Role Alignment & Seniority | 8 / 10 |\n"
+                f"| **Aggregated Final Score Summary** | **8.0 / 10** |\n\n"
+                f"### 🔍 Structural Evidence & Justification Log\n"
+                f"- **Technical Alignment**: Matches core Python configurations correctly.\n"
+                f"- **Candidate Verbatim Entry Capture**: '{self.state.primary_answers[:60]}...'\n\n"
+                f"## 🚀 Ultimate Operational Employment Verdict: [PASS / HIRE]"
+            )
+        else:
+            time.sleep(3)
+
+        result = InterviewCrew().final_grading_crew().kickoff(inputs=inputs)
+        self.state.final_scorecard = result.raw
+        return self.state
+    
+    @listen(run_final_grading)
+    def save_and_display_scorecard(self):
+        """save the final scorecard and display it to the user"""
+        print("[SYSTEM]: Compiling scorecard documentation...")
+
+        os.makedirs("output", exist_ok=True)
+
+        output_path = "output/candidate_assessment.md"
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(self.state.final_scorecard)
+
+        print(self.state.final_scorecard)
+        print(f"[SYSTEM SUCCESS]: Final scorecard saved to {output_path}")
+        return "process complete"
+
+
+def kickoff():
+    """Run the pipeline flow"""
+    flow = InterviewFlow()
+    flow.kickoff()
+    print("\n=== Flow Complete ===")
+    print("Your comprehensive assessment is ready in the output directory.")
+    print("Open output/candidate_assessment.md to view it.")
+
+
+def plot():
+    """Force capture the chart data and save it directly into the project folder"""
+    flow = InterviewFlow()
+    
+    # 1. Use the plot() command to get the raw HTML string contents from CrewAI
+    html_content = flow.plot() 
+    
+    # 2. Force write that exact data string into a real file in your workspace
+    output_filename = "interview_flow_chart.html"
+    with open(output_filename, "w", encoding="utf-8") as f:
+        f.write(html_content)
+        
+    print(f"\n[SYSTEM SUCCESS]: Flow visualization map explicitly written to root folder!")
+    print(f"File destination: {os.path.abspath(output_filename)}")
+
+
+if __name__ == "__main__":
+    kickoff()
+    # plot()
