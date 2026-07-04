@@ -16,6 +16,7 @@ load_dotenv()
 class InterviewState(BaseModel):
     job_description: str = ""
     cv_text: str = ""
+    candidate_name: str = "candidate"
     primary_questions_report: str = ""
     primary_answers: str = ""
     followup_questions_report: str = ""
@@ -39,6 +40,9 @@ class InterviewFlow(Flow[InterviewState]):
         else:
             print("[SYSTEM]: Live Gemini Mode active. Adhering to strict free-tier rate limits.")
 
+
+        raw_name = input("Please enter the candidate's full name :")
+        self.state.candidate_name = raw_name.strip().replace(" ", "_").lower()
         # Get user input matching your preferred structure
         self.state.job_description = input("Please enter the job description: ")
         #new pdf extraction
@@ -70,6 +74,8 @@ class InterviewFlow(Flow[InterviewState]):
                 self.state.cv_text = extracted_text
                 pdf_success = True
                 print(f"[SYSTEM SUCCESS]: Successfully extracted {len(extracted_text)} characters from PDF.")
+
+
 
                 print(self.state.cv_text)
                 
@@ -205,7 +211,8 @@ class InterviewFlow(Flow[InterviewState]):
 
         os.makedirs("output", exist_ok=True)
 
-        output_path = "output/candidate_assessment.md"
+        file_name = f"{self.state.candidate_name}_assessment.md"
+        output_path = os.path.join("output", file_name)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(self.state.final_scorecard)
 
@@ -220,7 +227,7 @@ def kickoff():
     flow.kickoff()
     print("\n=== Flow Complete ===")
     print("Your comprehensive assessment is ready in the output directory.")
-    print("Open output/candidate_assessment.md to view it.")
+    print("Open output/ to view it.")
 
 
 def plot():
