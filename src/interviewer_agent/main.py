@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from crewai import LLM
 from crewai.flow.flow import Flow, listen, start
 from interviewer_agent.crews.interview_crew.interview_crew import InterviewCrew
+from pypdf import PdfReader
 from dotenv import load_dotenv 
 
 load_dotenv() 
@@ -28,7 +29,7 @@ class InterviewFlow(Flow[InterviewState]):
 
     @start()
     def get_user_input(self):
-        """step 1: Get user input for job description and CV text"""
+        """step 1: Capture documents, extract text from CV PDFt"""
 
 
         mode_choice = input("Select Run Mode: (1) Live Google Gemini API  (2) Fast Local Simulation [Mock]: ")
@@ -40,7 +41,41 @@ class InterviewFlow(Flow[InterviewState]):
 
         # Get user input matching your preferred structure
         self.state.job_description = input("Please enter the job description: ")
-        self.state.cv_text = input("Please enter the candidate's CV text: ")
+        #new pdf extraction
+        pdf_success = False
+        while not pdf_success:
+            cv_path = input("Please enter the path to the candidate's CV PDF file (e.g., path/to/resume.pdf): ")
+            cv_path = cv_path.strip().strip("'\"") # Cleans up trailing quotes from drag-and-drop
+            
+            if not os.path.exists(cv_path):
+                print(f"[ERROR]: The file path '{cv_path}' does not exist. Please try again.")
+                continue
+                
+            try:
+                print("[SYSTEM]: Initializing binary PDF text extraction stream...")
+                reader = PdfReader(cv_path)
+                extracted_text = ""
+                
+                # Loop through every single page in the PDF and extract characters
+                for page in reader.pages:
+                    text_content = page.extract_text()
+                    if text_content:
+                        extracted_text += text_content + "\n"
+                
+                if not extracted_text.strip():
+                    print("[WARN]: Could not extract readable text. The PDF might be a scanned image.")
+                    print("Please try a text-based PDF or verify your file formatting.")
+                    continue
+                    
+                self.state.cv_text = extracted_text
+                pdf_success = True
+                print(f"[SYSTEM SUCCESS]: Successfully extracted {len(extracted_text)} characters from PDF.")
+
+                print(self.state.cv_text)
+                
+            except Exception as e:
+                print(f"[ERROR]: Failed to read the PDF file. Details: {e}")
+
 
         print("\n[SYSTEM]: User input received. Proceeding to question generation...\n")
         return self.state
