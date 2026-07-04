@@ -22,7 +22,6 @@ class InterviewState(BaseModel):
     followup_questions_report: str = ""
     followup_answers: str = ""
     final_scorecard: str = ""
-    is_mock_mode:bool=False
 
 
 class InterviewFlow(Flow[InterviewState]):
@@ -31,15 +30,6 @@ class InterviewFlow(Flow[InterviewState]):
     @start()
     def get_user_input(self):
         """step 1: Capture documents, extract text from CV PDFt"""
-
-
-        mode_choice = input("Select Run Mode: (1) Live Google Gemini API  (2) Fast Local Simulation [Mock]: ")
-        if mode_choice.strip() == "2":
-            self.state.is_mock_mode = True
-            print("[SYSTEM]: Local Simulation Mode active. Zero API quota will be consumed.")
-        else:
-            print("[SYSTEM]: Live Gemini Mode active. Adhering to strict free-tier rate limits.")
-
 
         raw_name = input("Please enter the candidate's full name :")
         self.state.candidate_name = raw_name.strip().replace(" ", "_").lower()
@@ -75,8 +65,6 @@ class InterviewFlow(Flow[InterviewState]):
                 pdf_success = True
                 print(f"[SYSTEM SUCCESS]: Successfully extracted {len(extracted_text)} characters from PDF.")
 
-
-
                 print(self.state.cv_text)
                 
             except Exception as e:
@@ -91,22 +79,15 @@ class InterviewFlow(Flow[InterviewState]):
         """run crew 1: Generate primary interview questions based on the job description and CV"""
         print("[SYSTEM]: Generating primary questions via Crew 1...")
 
-        if self.state.is_mock_mode:
-            time.sleep(1) # Simulates background execution latency
-            self.state.primary_questions_report = (
-                "1. Describe your experience with Python frameworks like FastAPI.\n"
-                "2. How do you design schema models for relational databases?\n"
-                "3. Detail a time you encountered undocumented technical debt."
-            )
-        else:
-            time.sleep(3) # Safe rate-limit buffer break
-            interview_crew = InterviewCrew()
-            result = interview_crew.question_generation_crew().kickoff(inputs={
+        
+        time.sleep(3) # Safe rate-limit buffer break
+        interview_crew = InterviewCrew()
+        result = interview_crew.question_generation_crew().kickoff(inputs={
                 "job_description": self.state.job_description,
                 "cv_text": self.state.cv_text,
                 "primary_answers": "Pending collection in the next step"
             })
-            self.state.primary_questions_report = result.raw
+        self.state.primary_questions_report = result.raw
 
         print(self.state.primary_questions_report)
       
@@ -131,22 +112,17 @@ class InterviewFlow(Flow[InterviewState]):
         """run crew 2 and print out follow up questions"""
         print("--- [Analyzing answers.Deploying followup agent] ---")
 
+        time.sleep(3) # Safe rate-limit buffer break
         inputs = {
             "cv_text": self.state.cv_text,
             "job_description": self.state.job_description,
             "primary_answers": self.state.primary_answers
         }
 
-        if self.state.is_mock_mode:
-            time.sleep(1)
-            self.state.followup_questions_report = (
-                "1. Why did you prioritize dynamic data models over static structures?\n"
-                "2. How do you mitigate memory lock overhead under heavy I/O load?"
-            )
-        else:
-            time.sleep(3) # Safe rate-limit buffer break
-            result = InterviewCrew().followup_generation_crew().kickoff(inputs=inputs)
-            self.state.followup_questions_report = result.raw
+    
+        
+        result = InterviewCrew().followup_generation_crew().kickoff(inputs=inputs)
+        self.state.followup_questions_report = result.raw
 
         print(self.state.followup_questions_report)
         return self.state
@@ -171,6 +147,8 @@ class InterviewFlow(Flow[InterviewState]):
         """run crew 3: Generate final scorecard based on all inputs"""
         print("\n[SYSTEM]: Submitting complete transcript to the Grading Panel via Crew 3...")
 
+
+        time.sleep(3)
         inputs = {
             "cv_text": self.state.cv_text,
             "job_description": self.state.job_description,
@@ -180,26 +158,7 @@ class InterviewFlow(Flow[InterviewState]):
             "followup_answers": self.state.followup_answers
         }
 
-        if self.state.is_mock_mode:
-            time.sleep(1)
-            self.state.final_scorecard = (
-                f"# 📋 Final Candidate Evaluation Scorecard\n\n"
-                f"### 📊 Evaluation Rubric Metrics Matrix\n"
-                f"| Evaluation Parameter Dimension | Assessed Rating (1-10) |\n"
-                f"| :--- | :--- |\n"
-                f"| Technical Stack Match | 8 / 10 |\n"
-                f"| Problem-Solving & Depth | 7 / 10 |\n"
-                f"| Communication Clarity | 9 / 10 |\n"
-                f"| Role Alignment & Seniority | 8 / 10 |\n"
-                f"| **Aggregated Final Score Summary** | **8.0 / 10** |\n\n"
-                f"### 🔍 Structural Evidence & Justification Log\n"
-                f"- **Technical Alignment**: Matches core Python configurations correctly.\n"
-                f"- **Candidate Verbatim Entry Capture**: '{self.state.primary_answers[:60]}...'\n\n"
-                f"## 🚀 Ultimate Operational Employment Verdict: [PASS / HIRE]"
-            )
-        else:
-            time.sleep(3)
-
+    
         result = InterviewCrew().final_grading_crew().kickoff(inputs=inputs)
         self.state.final_scorecard = result.raw
         return self.state
