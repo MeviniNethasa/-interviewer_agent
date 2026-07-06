@@ -1,8 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import CandidateHome from "./pages/CandidateHome"; // 
+import CandidateHome from "./pages/CandidateHome"; 
 import AdminDashboard from "./pages/AdminDashboard"; 
+import InterviewRoom from "./pages/InterviewRoom";
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem("access_token");
@@ -30,6 +31,14 @@ function App() {
           element={
             <ProtectedRoute allowedRole="candidate">
               <CandidateHome />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/interview-room" 
+          element={
+            <ProtectedRoute allowedRole="candidate">
+              <InterviewRoom />
             </ProtectedRoute>
           } 
         />
