@@ -1,10 +1,10 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Any
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import User
@@ -14,27 +14,34 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "9s8dfy23hjkliuh12398hdaisufhq2389hdkj
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # Token lasts 24 hours
 
-# Configure passlib to use bcrypt for strong enterprise hashing
-password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 # Tells FastAPI where to look for the security token string inside request headers
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 def hash_password(password: str) -> str:
-    """Convert raw text passwords into secure hashes before database persistence"""
-    return password_context.hash(password)
+    """Convert raw text passwords into secure hashes using native bcrypt"""
+    # Native bcrypt requires strings to be encoded to raw bytes first
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify incoming login passwords against the stored database hash"""
-    return password_context.verify(plain_password, hashed_password)
+    """Verify incoming login passwords natively against the stored database hash"""
+    try:
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    except Exception:
+        return False
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Generate a securely signed JSON Web Token containing user properties"""
     to_encode = data.copy()
+    
+    # FIXED: Replaced the deprecated naive utcnow() with timezone-aware objects
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=ALGORITHM)

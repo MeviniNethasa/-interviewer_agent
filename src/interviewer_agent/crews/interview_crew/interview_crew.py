@@ -4,6 +4,24 @@ from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
 import os
 
+# 1. Dynamically read all numbered Gemini API keys from the environment
+API_KEYS = []
+index = 1
+while True:
+    key = os.getenv(f"GEMINI_API_KEY_{index}")
+    if not key:
+        break
+    API_KEYS.append(key)
+    index += 1
+
+# Fallback in case you still have the unnumbered GEMINI_API_KEY env variable
+if not API_KEYS and os.getenv("GEMINI_API_KEY"):
+    API_KEYS.append(os.getenv("GEMINI_API_KEY"))
+
+# Global pointer to remember the last working key across your 3 distinct crews
+current_key_index = 0
+
+
 @CrewBase
 class InterviewCrew():
     """Interview evaluation and scoring crew"""
@@ -12,11 +30,40 @@ class InterviewCrew():
     tasks: List[Task]
 
     def __init__(self) -> None:
-        self.llm = LLM(
+        if not API_KEYS:
+            raise ValueError("No Gemini API keys found in your environment/.env configuration.")
+            
+        # Initialize the base CrewAI LLM instance
+        self._llm_instance = LLM(
             model="gemini/gemini-2.5-flash",
             temperature=0.2,
-            api_key=os.environ.get("GEMINI_API_KEY")
+            api_key=API_KEYS[current_key_index]
         )
+    
+    def get_llm(self) -> LLM:
+        """Helper to fetch the LLM and bind our rotation logic safely inside CrewAI."""
+        global current_key_index
+        
+        # We hook into LiteLLM's error handling by setting a custom callback
+        # This triggers instantly if any agent gets a 429 Rate/Quota limit error
+        import litellm
+        
+        def handle_litellm_error(exception):
+            global current_key_index
+            error_msg = str(exception)
+            
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "Quota" in error_msg:
+                print(f"\n[Warning] Gemini Key Index {current_key_index} exhausted its quota. Rotating...")
+                current_key_index = (current_key_index + 1) % len(API_KEYS)
+                # Dynamically update the key inside the live LLM object for subsequent retries
+                self._llm_instance.api_key = API_KEYS[current_key_index]
+                
+        # Register the failure callback to handle the rotation seamlessly behind the scenes
+        litellm.failure_callback = [handle_litellm_error]
+        
+        # Ensure the current agent has the latest working key assigned before starting its task
+        self._llm_instance.api_key = API_KEYS[current_key_index]
+        return self._llm_instance
 
 
 
@@ -24,7 +71,7 @@ class InterviewCrew():
     def cv_scanner(self) -> Agent:
         return Agent(
             config=self.agents_config['cv_scanner'], # type: ignore[index]
-            llm=self.llm,
+            llm=self.get_llm(),
             verbose=False
         )
 
@@ -32,7 +79,7 @@ class InterviewCrew():
     def primary_interviewer(self) -> Agent:
         return Agent(
             config=self.agents_config['primary_interviewer'], # type: ignore[index]
-            llm=self.llm,
+            llm=self.get_llm(),
             verbose=False
         )
 
@@ -40,7 +87,7 @@ class InterviewCrew():
     def followup_interviewer(self) -> Agent:
         return Agent(
             config=self.agents_config['followup_interviewer'], # type: ignore[index]
-            llm=self.llm,
+            llm=self.get_llm(),
             verbose=False
         )
 
@@ -48,7 +95,7 @@ class InterviewCrew():
     def grading_panel(self) -> Agent:
         return Agent(
             config=self.agents_config['grading_panel'], # type: ignore[index]
-            llm=self.llm,
+            llm=self.get_llm(),
             verbose=False
         )
 
