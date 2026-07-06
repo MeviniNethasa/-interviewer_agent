@@ -12,7 +12,6 @@ def run_crew_1_async(db: Session, track_id: int, job_desc: str, cv_text: str):
 
     try:
         # Restoring rate-limit protective spacing rules
-        time.sleep(3)
         
         # Instantiate your clean, untouched operational engine
         crew_engine = InterviewCrew()
@@ -35,7 +34,6 @@ def run_crew_2_async(db: Session, track_id: int, job_desc: str, cv_text: str, pr
         return
 
     try:
-        time.sleep(3)
         crew_engine = InterviewCrew()
         result = crew_engine.followup_generation_crew().kickoff(inputs={
             "cv_text": cv_text,
@@ -56,7 +54,6 @@ def run_crew_3_async(db: Session, track_id: int, job_desc: str, cv_text: str, pr
         return
 
     try:
-        time.sleep(3)
         crew_engine = InterviewCrew()
         result = crew_engine.final_grading_crew().kickoff(inputs={
             "cv_text": cv_text,

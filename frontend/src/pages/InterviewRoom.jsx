@@ -115,17 +115,40 @@ export default function InterviewRoom() {
         {/* ──── CHAT DISPLAY AREA ──── */}
         <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-slate-950/20 border border-slate-800 rounded-2xl mb-4 shadow-inner flex flex-col justify-center">
           
-          {polling ? (
-            <div className="text-center space-y-3 p-8 animate-pulse">
-              <Loader2 className="w-10 h-10 text-blue-500 animate-spin mx-auto" />
-              <h3 className="text-lg font-bold text-white">AI Recruiting Engine Thinking...</h3>
-              <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
-                {status === "not_started" 
-                  ? "Crew 1 is analyzing your uploaded CV PDF against the Job Requirements to formulate specialized test scenarios..."
-                  : "Crew 2 is cross-examining your answers to detect generic claims or architectural gaps..."}
-              </p>
+                    {polling ? (
+            <div className="text-center space-y-4 p-8 max-w-md mx-auto">
+              <div className="relative flex items-center justify-center">
+                <Loader2 className="w-14 h-14 text-blue-500 animate-spin absolute" />
+                <Bot className="w-6 h-6 text-blue-400" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-white tracking-tight pt-4">Deep Profile Analysis Active</h3>
+              
+              {/* DYNAMIC COGNITIVE PIPELINE LOGGING */}
+              <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-4 text-left space-y-2.5 font-mono text-xs text-slate-400 shadow-inner">
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-400">●</span>
+                  <span className={status === "not_started" ? "text-blue-400 font-bold animate-pulse" : "text-slate-500 line-through"}>
+                    [Crew 1] Executing binary PDF text vector sweep...
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={status === "not_started" ? "text-slate-600" : "text-emerald-400"}>●</span>
+                  <span className={status === "not_started" ? "text-slate-600" : "text-blue-400 font-bold animate-pulse"}>
+                    [Crew 1] Cross-referencing resume text with Job Description...
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-600">●</span>
+                  <span className="text-slate-500">
+                    [Crews Engine] Formatting context-aware scenario prompts...
+                  </span>
+                </div>
+              </div>
+              <p className="text-slate-500 text-xs italic">Multi-agent parsing typically concludes within 30 seconds.</p>
             </div>
           ) : status === "completed" ? (
+
             <div className="text-center space-y-3 p-8 max-w-lg mx-auto">
               <CheckCircle className="w-14 h-14 text-emerald-400 mx-auto" />
               <h3 className="text-2xl font-bold text-white tracking-tight">Interview Completed!</h3>
