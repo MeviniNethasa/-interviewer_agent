@@ -24,7 +24,7 @@ current_key_index = 0
 
 @CrewBase
 class InterviewCrew():
-    """Interview evaluation and scoring crew"""
+    """Interview evaluation and scoring crew with automated key rotation"""
 
     agents: List[BaseAgent]
     tasks: List[Task]
@@ -33,45 +33,42 @@ class InterviewCrew():
         if not API_KEYS:
             raise ValueError("No Gemini API keys found in your environment/.env configuration.")
             
-        # Initialize the base CrewAI LLM instance
         self._llm_instance = LLM(
             model="gemini/gemini-2.5-flash",
             temperature=0.2,
             api_key=API_KEYS[current_key_index]
         )
-    
-    def get_llm(self) -> LLM:
-        """Helper to fetch the LLM and bind our rotation logic safely inside CrewAI."""
-        global current_key_index
         
-        # We hook into LiteLLM's error handling by setting a custom callback
-        # This triggers instantly if any agent gets a 429 Rate/Quota limit error
+        # Initialize LiteLLM error rotation listeners immediately upon class instantiation
+        self.configure_rotation_callbacks()
+
+    def configure_rotation_callbacks(self):
+        """Register failure hooks into LiteLLM to capture rate limits seamlessly"""
         import litellm
         
         def handle_litellm_error(exception):
             global current_key_index
             error_msg = str(exception)
-            
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "Quota" in error_msg:
                 print(f"\n[Warning] Gemini Key Index {current_key_index} exhausted its quota. Rotating...")
                 current_key_index = (current_key_index + 1) % len(API_KEYS)
-                # Dynamically update the key inside the live LLM object for subsequent retries
                 self._llm_instance.api_key = API_KEYS[current_key_index]
+                os.environ["GEMINI_API_KEY"] = API_KEYS[current_key_index]
                 
-        # Register the failure callback to handle the rotation seamlessly behind the scenes
         litellm.failure_callback = [handle_litellm_error]
-        
-        # Ensure the current agent has the latest working key assigned before starting its task
+
+    def update_and_fetch_llm(self) -> LLM:
+        """Updates internal key matrices and forces Pylance reference tracking safety"""
+        global current_key_index
         self._llm_instance.api_key = API_KEYS[current_key_index]
+        os.environ["GEMINI_API_KEY"] = API_KEYS[current_key_index]
         return self._llm_instance
-
-
 
     @agent
     def cv_scanner(self) -> Agent:
         return Agent(
             config=self.agents_config['cv_scanner'], # type: ignore[index]
-            llm=self.get_llm(),
+            llm=self.update_and_fetch_llm(),
             verbose=False
         )
 
@@ -79,7 +76,7 @@ class InterviewCrew():
     def primary_interviewer(self) -> Agent:
         return Agent(
             config=self.agents_config['primary_interviewer'], # type: ignore[index]
-            llm=self.get_llm(),
+            llm=self.update_and_fetch_llm(),
             verbose=False
         )
 
@@ -87,7 +84,7 @@ class InterviewCrew():
     def followup_interviewer(self) -> Agent:
         return Agent(
             config=self.agents_config['followup_interviewer'], # type: ignore[index]
-            llm=self.get_llm(),
+            llm=self.update_and_fetch_llm(),
             verbose=False
         )
 
@@ -95,7 +92,7 @@ class InterviewCrew():
     def grading_panel(self) -> Agent:
         return Agent(
             config=self.agents_config['grading_panel'], # type: ignore[index]
-            llm=self.get_llm(),
+            llm=self.update_and_fetch_llm(),
             verbose=False
         )
 
@@ -128,7 +125,7 @@ class InterviewCrew():
 
     @crew
     def question_generation_crew(self) -> Crew:
-        """Crew 1: Only scans CV and generates primary questions"""
+        """Crew 1: Scans CV and generates primary questions"""
         return Crew(
             agents=[self.cv_scanner(), self.primary_interviewer()],
             tasks=[self.scan_task(), self.generate_questions_task()],
@@ -138,7 +135,7 @@ class InterviewCrew():
 
     @crew
     def followup_generation_crew(self) -> Crew:
-        """Crew 2: Evaluates primary answers and generates follow-up questions"""
+        """Crew 2: Evaluates primary answers and generates follow-ups"""
         return Crew(
             agents=[self.followup_interviewer()],
             tasks=[self.followup_task()],
