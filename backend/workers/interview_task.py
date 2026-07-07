@@ -16,7 +16,7 @@ def _sync_kickoff_crew2(job_desc: str, cv_text: str, primary_ans: str):
     return InterviewCrew().followup_generation_crew().kickoff(inputs={
         "cv_text": cv_text,
         "job_description": job_desc,
-        "candidate_answers": primary_ans
+        "primary_answers": primary_ans
     })
 
 def _sync_kickoff_crew3(job_desc: str, cv_text: str, prim_q: str, prim_a: str, foll_q: str, foll_a: str):
@@ -24,8 +24,8 @@ def _sync_kickoff_crew3(job_desc: str, cv_text: str, prim_q: str, prim_a: str, f
         "cv_text": cv_text,
         "job_description": job_desc,
         "primary_questions_report": prim_q,
-        "candidate_answers": prim_a,
-        "followup_report": foll_q,
+        "primary_answers": prim_a,
+        "followup_questions_report": foll_q,
         "followup_answers": foll_a
     })
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, Send, Bot, User, Loader2, CheckCircle, HelpCircle } from "lucide-react";
+import { MessageSquare, Send, Bot, User, Loader2, CheckCircle, ArrowRight } from "lucide-react";
 
 export default function InterviewRoom() {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ export default function InterviewRoom() {
   const token = localStorage.getItem("access_token");
 
   // Core Pipeline Interview States
-  const [status, setStatus] = useState("not_started"); // not_started, primary_questions_ready, primary_answers_submitted, followup_questions_ready, completed
+  const [status, setStatus] = useState("not_started"); 
   const [questionsDisplay, setQuestionsDisplay] = useState("");
   const [answerInput, setAnswerInput] = useState("");
   
@@ -27,14 +27,13 @@ export default function InterviewRoom() {
       return;
     }
 
-    // Initialize real-time background tracking loop
     const interval = setInterval(() => {
       checkInterviewStatus();
     }, 4000);
 
-    checkInterviewStatus(); // Initial pass sweep execution
+    checkInterviewStatus(); 
 
-    return () => clearInterval(interval); // Clear polling worker context on component unmount
+    return () => clearInterval(interval); 
   }, [applicationId, status]);
 
   const checkInterviewStatus = async () => {
@@ -47,7 +46,6 @@ export default function InterviewRoom() {
       
       setStatus(data.status);
       
-      // Map questions display based on structural milestone state transitions
       if (data.status === "primary_questions_ready") {
         setQuestionsDisplay(data.primary_questions);
         setPolling(false);
@@ -58,7 +56,6 @@ export default function InterviewRoom() {
         setQuestionsDisplay("");
         setPolling(false);
       } else {
-        // Keep loading screen active if crews are block-processing in background
         setPolling(true);
       }
     } catch (err) {
@@ -68,12 +65,11 @@ export default function InterviewRoom() {
 
   const handleSubmitResponse = async (e) => {
     e.preventDefault();
-    if (!answerInput.strip()) return;
+    if (!answerInput.trim()) return;
 
     setSubmitting(true);
     setError("");
 
-    // Determine target endpoint depending on structural state boundaries
     const targetEndpoint = status === "primary_questions_ready" 
       ? `${API_BASE}/submit-primary/${applicationId}`
       : `${API_BASE}/submit-followup/${applicationId}`;
@@ -92,9 +88,10 @@ export default function InterviewRoom() {
       if (!response.ok) throw new Error(data.detail || "Failed to submit responses forward.");
       
       setAnswerInput("");
-      setPolling(true); // Restart processing loader block while backend reactivates Crews
+      setPolling(true); 
     } catch (err) {
       setError(err.message);
+    } finally {
       setSubmitting(false);
     }
   };
@@ -104,71 +101,63 @@ export default function InterviewRoom() {
       {/* Header Banner */}
       <nav className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center gap-2 text-blue-400 font-bold text-xl shadow-md">
         <MessageSquare className="w-6 h-6" />
-        <span>AI Autonomous Interview Assessment Room</span>
+        <span>AI Recruitment Platform — Interactive Interview Room</span>
       </nav>
 
-      {/* Primary Room Body */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col justify-between overflow-hidden h-[calc(100vh-80px)]">
+      {/* Primary Room Body Content */}
+      <main className="flex-1 max-w-4xl w-full mx-auto p-6 flex flex-col gap-6 h-[calc(100vh-80px)]">
         
-        {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm p-3 rounded-xl mb-4">{error}</div>}
+        {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm p-3 rounded-xl shadow-sm">{error}</div>}
 
-        {/* ──── CHAT DISPLAY AREA ──── */}
-        <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-slate-950/20 border border-slate-800 rounded-2xl mb-4 shadow-inner flex flex-col justify-center">
+        {/* CHAT CONTAINER FRAME */}
+        <div className="flex-1 bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col justify-center min-h-[400px]">
           
-                    {polling ? (
-            <div className="text-center space-y-4 p-8 max-w-md mx-auto">
+          {polling ? (
+            <div className="text-center space-y-4 max-w-sm mx-auto p-4 animate-fade-in">
               <div className="relative flex items-center justify-center">
-                <Loader2 className="w-14 h-14 text-blue-500 animate-spin absolute" />
-                <Bot className="w-6 h-6 text-blue-400" />
+                <Loader2 className="w-12 h-12 text-blue-500 animate-spin absolute" />
+                <Bot className="w-5 h-5 text-blue-400" />
               </div>
+              <h3 className="text-lg font-bold text-white pt-2">Deep Profile Analysis Active</h3>
               
-              <h3 className="text-xl font-bold text-white tracking-tight pt-4">Deep Profile Analysis Active</h3>
-              
-              {/* DYNAMIC COGNITIVE PIPELINE LOGGING */}
-              <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-4 text-left space-y-2.5 font-mono text-xs text-slate-400 shadow-inner">
+              <div className="bg-slate-950/50 border border-slate-700/60 rounded-xl p-4 text-left space-y-3 font-mono text-[11px] text-slate-400 shadow-inner">
                 <div className="flex items-center gap-2">
                   <span className="text-emerald-400">●</span>
                   <span className={status === "not_started" ? "text-blue-400 font-bold animate-pulse" : "text-slate-500 line-through"}>
-                    [Crew 1] Executing binary PDF text vector sweep...
+                    [Crews] Executing PDF text vector sweeps...
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={status === "not_started" ? "text-slate-600" : "text-emerald-400"}>●</span>
-                  <span className={status === "not_started" ? "text-slate-600" : "text-blue-400 font-bold animate-pulse"}>
-                    [Crew 1] Cross-referencing resume text with Job Description...
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-600">●</span>
-                  <span className="text-slate-500">
-                    [Crews Engine] Formatting context-aware scenario prompts...
+                  <span className={status === "not_started" ? "text-slate-700" : "text-emerald-400"}>●</span>
+                  <span className={status === "not_started" ? "text-slate-500" : "text-blue-400 font-bold animate-pulse"}>
+                    [Crews] Mapping context-aware testing parameters...
                   </span>
                 </div>
               </div>
-              <p className="text-slate-500 text-xs italic">Multi-agent parsing typically concludes within 30 seconds.</p>
+              <p className="text-slate-500 text-xs italic">Parsing typically concludes within 30 seconds.</p>
             </div>
           ) : status === "completed" ? (
-
-            <div className="text-center space-y-3 p-8 max-w-lg mx-auto">
-              <CheckCircle className="w-14 h-14 text-emerald-400 mx-auto" />
-              <h3 className="text-2xl font-bold text-white tracking-tight">Interview Completed!</h3>
+            <div className="text-center space-y-4 max-w-md mx-auto p-4 animate-fade-in">
+              <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto drop-shadow-md" />
+              <h3 className="text-2xl font-bold text-white tracking-tight">Interview Lifecycle Completed!</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Your performance transcripts and code assertions have been securely wrapped and sent to the HR Review board. Evaluation complete.
+                Your technical code assertions and response records have been wrapped and transmitted to the executive corporate dashboard registry.
               </p>
-              <button onClick={() => navigate("/dashboard")} className="mt-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold py-2 px-6 rounded-xl text-sm transition-all cursor-pointer">
-                Return to Job Board
+              <button onClick={() => navigate("/dashboard")} className="mt-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl text-sm shadow-md transition-colors cursor-pointer inline-flex items-center gap-1.5">
+                <span>Return to Workspace Hub</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            // Render active questions message stack layout
-            <div className="space-y-4 flex-1 justify-end flex flex-col">
-              <div className="flex gap-3 max-w-2xl bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow shadow-slate-950/50 self-start">
-                <div className="bg-blue-600/10 text-blue-400 p-2 rounded-xl h-fit border border-blue-500/10">
+            // ACTIVE SCENARIO LAYOUT PROMPTS VIEWPORT
+            <div className="w-full flex-1 flex flex-col justify-start overflow-y-auto space-y-4 animate-fade-in">
+              <div className="bg-slate-900 border border-slate-700 p-5 rounded-2xl max-w-3xl flex gap-3 shadow-md shadow-slate-950/20">
+                <div className="bg-blue-500/10 text-blue-400 p-2.5 rounded-xl h-fit border border-blue-500/20">
                   <Bot className="w-5 h-5" />
                 </div>
-                <div>
-                  <span className="text-xs font-bold text-slate-400 tracking-wider uppercase block mb-1">AI Evaluator Prompt</span>
-                  <div className="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed font-medium">
+                <div className="flex-1">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Live AI Evaluator Prompt</span>
+                  <div className="text-slate-200 text-sm font-sans font-medium whitespace-pre-wrap leading-relaxed">
                     {questionsDisplay}
                   </div>
                 </div>
@@ -177,36 +166,33 @@ export default function InterviewRoom() {
           )}
         </div>
 
-        {/* ──── INPUT ANSWER RESPONSE FIELD FORM ──── */}
+        {/* TEXT AREA SUBMISSION TERMINAL FOOTER */}
         {(!polling && status !== "completed") && (
-          <form onSubmit={handleSubmitResponse} className="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-xl flex gap-3 items-end">
-            <div className="flex-1">
-              <label htmlFor="response-text-area" className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
-                <User className="w-3.5 h-3.5" /> Enter your technical response
+          <form onSubmit={handleSubmitResponse} className="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-xl flex flex-col md:flex-row gap-4 items-end animate-fade-in">
+            <div className="flex-1 w-full">
+              <label htmlFor="user-defense-input" className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" /> Your Technical Defense Statement
               </label>
               <textarea 
-                id="response-text-area"
+                id="user-defense-input"
                 value={answerInput}
                 onChange={(e) => setAnswerInput(e.target.value)}
                 required
                 disabled={submitting}
                 rows={4}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
-                placeholder="Type your design choices, framework commands, or architectural trade-offs explicitly..."
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors resize-none shadow-inner"
+                placeholder="Detail design trade-offs, transactions isolation models, or query optimization paths explicitly..."
               />
             </div>
             <button 
               type="submit" 
-              disabled={submitting || !answerInput.strip()}
-              className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 px-5 rounded-xl text-sm transition-all h-fit flex items-center gap-2 shadow-lg shadow-blue-600/10 cursor-pointer"
+              disabled={submitting || !answerInput.trim()}
+              className="w-full md:w-auto bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 px-6 rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2 h-fit cursor-pointer uppercase tracking-wider font-bold"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  <span>Submit Response</span>
-                  <Send className="w-4 h-4" />
-                </>
+                <span>Submit response</span>
               )}
             </button>
           </form>

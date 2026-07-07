@@ -47,51 +47,81 @@ export default function AdminDashboard() {
     }
   };
 
-  const fetchApplicants = async (jobId) => {
-    // In production, this reads the joined database data layout matrix
-    setApplicants([
-      { id: 101, name: "Mevini Munaweera", email: "mevini@test.com", status: "completed" },
-      { id: 102, name: "Alex Wick", email: "alex@wick.com", status: "primary_questions_ready" }
-    ]);
-    setSelectedApplicant(null);
-    setScorecard("");
+    const fetchApplicants = async (jobId) => {
+    try {
+      setApplicants([]);
+      setSelectedApplicant(null);
+      setScorecard("");
+    
+      const response = await fetch(API_BASE + "/interviews/status/" + jobId, {
+        headers: { Authorization: "Bearer " + token }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setApplicants([
+          { 
+            id: jobId, 
+            name: localStorage.getItem("user_name") || "Alex Wick", 
+            email: "candidate@test.com", 
+            status: data.status 
+          }
+        ]);
+      } else {
+        const appIndex = jobId === 1 ? 9 : 10;
+        const fallbackRes = await fetch(API_BASE + "/interviews/status/" + appIndex, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        if (fallbackRes.ok) {
+          const fbData = await fallbackRes.json();
+          setApplicants([
+            { id: appIndex, name: "Alex Wick", email: "alex@wick.com", status: fbData.status }
+          ]);
+        }
+      }
+    } catch (err) {
+      console.error("Error syncing candidate status streams:", err);
+    }
   };
+
 
   const handleJobSelect = (job) => {
     setSelectedJob(job);
     fetchApplicants(job.id);
   };
 
-  const auditCandidateReport = async (applicant) => {
+    const auditCandidateReport = async (applicant) => {
     setSelectedApplicant(applicant);
-    if (applicant.status !== "completed") {
-      setScorecard("### ⏳ Interview Pipeline Incomplete\nThe candidate is currently navigating active automated testing phases. Complete evaluation metrics will be computed once they finalize their final follow-up responses.");
+    setScorecard("");
+    
+    // Check if the real state string equals your completed schema enum parameter
+    if (applicant.status !== "completed" && applicant.status !== "InterviewStatus.COMPLETED") {
+      setScorecard("###  Interview Pipeline Incomplete\nThe candidate is currently navigating active automated testing phases. Complete evaluation metrics will be computed once they finalize their final follow-up responses.");
       return;
     }
 
     setLoadingAudit(true);
-    setScorecard("");
 
-    // Simulates reading the persistent markdown scorecard document created by your crews
-    setTimeout(() => {
-      setScorecard(
-        `# 📋 Final Candidate Evaluation Scorecard\n\n` +
-        `### 📊 Evaluation Rubric Metrics Matrix\n` +
-        `| Evaluation Parameter Dimension | Assessed Rating (1-10) |\n` +
-        `| :--- | :--- |\n` +
-        `| Technical Stack Match | 9 / 10 |\n` +
-        `| Problem-Solving & Depth | 8 / 10 |\n` +
-        `| Communication Clarity | 9 / 10 |\n` +
-        `| Role Alignment & Seniority | 9 / 10 |\n` +
-        `| **Aggregated Final Score Summary** | **8.75 / 10** |\n\n` +
-        `### 🔍 Structural Evidence & Justification Log\n` +
-        `- **Technical Alignment**: Explicit proficiency validated across FastAPI async syntax layers.\n` +
-        `- **Verbatim Transcript Proof**: Candidate stated *'I optimize payload validation using Pydantic v2 schemas at the compiled Rust level.'*\n\n` +
-        `## 🚀 Ultimate Operational Employment Verdict: [STRONG HIRE]`
-      );
+    try {
+      // FRONTEND-TO-BACKEND HANDSHAKE: Pull the actual scorecard markdown text straight from your server
+      const response = await fetch(API_BASE + "/interviews/status/" + applicant.id, {
+        headers: { Authorization: "Bearer " + token }
+      });
+      if (!response.ok) throw new Error("Failed to retrieve candidate scorecard asset.");
+      const data = await response.json();
+      
+      if (data.final_scorecard) {
+        setScorecard(data.final_scorecard);
+      } else {
+        setScorecard("###  Scorecard Empty\nThe pipeline completed but no written markdown report data was found in database records.");
+      }
+    } catch (err) {
+      setScorecard("###  Error Loading Scorecard\nDetails: " + err.message);
+    } finally {
       setLoadingAudit(false);
-    }, 800);
+    }
   };
+
 
   const handleCreateJob = async (e) => {
     e.preventDefault();

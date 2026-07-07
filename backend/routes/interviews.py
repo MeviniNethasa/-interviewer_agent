@@ -60,10 +60,24 @@ def get_interview_status(application_id: int, db: Session = Depends(get_db), cur
     if not track:
         raise HTTPException(status_code=404, detail="Interview process tracking index not found.")
 
+    raw_primary = track.primary_questions or ""
+    raw_followup = track.followup_questions or ""
+
+    # SECURITY FILTER FOR CANDIDATES: Strip internal analytical text reports from the string
+    if current_user.role == UserRole.CANDIDATE:
+        # If Crew 2 injected a breakdown text string above the follow-up queries, isolate the questions section
+        if "### Probing Questions" in raw_primary:
+            raw_primary = raw_primary.split("### Probing Questions")[-1].strip()
+        elif "### Cross-Examination Breakdown" in raw_primary:
+            raw_primary = raw_primary.split("###")[-1].strip()
+            
+        if "###" in raw_followup:
+            raw_followup = raw_followup.split("###")[-1].strip()
+
     response_data = {
         "status": track.status.value if hasattr(track.status, 'value') else str(track.status),
-        "primary_questions": track.primary_questions,
-        "followup_questions": track.followup_questions
+        "primary_questions": raw_primary.strip(),
+        "followup_questions": raw_followup.strip()
     }
 
     if current_user.role == UserRole.ADMIN:
@@ -71,6 +85,7 @@ def get_interview_status(application_id: int, db: Session = Depends(get_db), cur
         response_data["verdict"] = track.verdict.value if hasattr(track.verdict, 'value') else str(track.verdict)
         
     return response_data
+
 
 
 @router.post("/submit-primary/{application_id}")
@@ -109,9 +124,11 @@ async def submit_followup_answers(
 
     followup_text_ans = answers.get("answers", "")
     track.followup_answers = followup_text_ans
+    
+    # FIX: Change the database status instantly so the frontend knows Crew 3 is compiling records
+    track.status = InterviewStatus.PRIMARY_ANSWERS_SUBMITTED  # Re-uses the load-state indicator to re-trigger the UI loader box
     db.commit()
 
-    # FIXED: Non-blocking async loop task generation to eliminate background thread freezes
     asyncio.create_task(run_crew_3_async(
         track.id, track.application.job.description, track.application.cv_text, 
         track.primary_questions, track.primary_answers, track.followup_questions, followup_text_ans
