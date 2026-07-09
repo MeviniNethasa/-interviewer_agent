@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, FileText, UploadCloud, Briefcase, Award, Loader2, Play } from "lucide-react";
+import { LogOut, FileText, UploadCloud, Briefcase, Award, Loader2, Sparkles } from "lucide-react";
 
 export default function CandidateHome() {
   const navigate = useNavigate();
@@ -10,15 +10,12 @@ export default function CandidateHome() {
   const [cvFile, setCvFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const ipAddress = ["127", "0", "0", "1"].join(".");
   const API_BASE = "http://" + ipAddress + ":8000/api";
 
-  useEffect(() => {
-    fetchActiveJobs();
-  }, []);
+  useEffect(() => { fetchActiveJobs(); }, []);
 
   const fetchActiveJobs = async () => {
     try {
@@ -31,11 +28,6 @@ export default function CandidateHome() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
   };
 
   const handleFileChange = (e) => {
@@ -55,7 +47,6 @@ export default function CandidateHome() {
 
     setSubmitting(true);
     setError("");
-    setMessage("");
 
     const token = localStorage.getItem("access_token");
     const formData = new FormData();
@@ -64,21 +55,14 @@ export default function CandidateHome() {
     try {
       const response = await fetch(`${API_BASE}/interviews/apply/${selectedJob.id}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.detail || "Application process failed.");
 
-      setMessage("🚀 Application and CV logged successfully! Directing to AI Interview Room...");
       localStorage.setItem("active_application_id", data.application_id);
-      
-      setTimeout(() => {
-        navigate("/interview-room");
-      }, 2000);
+      navigate("/interview-room");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -87,38 +71,30 @@ export default function CandidateHome() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
-      {/* Navigation Header */}
-      <nav className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center shadow-md">
-        <div className="flex items-center gap-2 text-blue-400 font-bold Jack-font text-xl">
-          <Briefcase className="w-6 h-6" />
-          <span>AI Recruitment Hub</span>
+    <div className="min-h-screen bg-slate-900 tech-grid-mesh text-slate-100 flex flex-col font-sans relative">
+      <nav className="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/60 px-8 py-4 flex justify-between items-center shadow-lg">
+        <div className="flex items-center gap-2.5 text-blue-400 font-bold text-xl tracking-tight">
+          <Sparkles className="w-5 h-5 text-blue-400" />
+          <span className="text-white">AI Core Recruitment Hub</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-slate-300 text-sm font-medium">Welcome, <strong className="text-white">{userName}</strong></span>
-          <button onClick={handleLogout} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium py-1.5 px-3 rounded-lg border border-slate-600 transition-colors cursor-pointer">
-            <LogOut className="w-4 h-4" />
+          <span className="text-slate-300 text-xs">Profile: <strong className="text-blue-400">{userName}</strong></span>
+          <button onClick={() => { localStorage.clear(); navigate("/login"); }} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 text-xs font-semibold py-1.5 px-3.5 rounded-xl transition-all cursor-pointer">
+            <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
           </button>
         </div>
       </nav>
 
-      {/* Main Content Workspace Layout */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left/Middle Column: Available Job Openings */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Award className="w-6 h-6 text-blue-500" /> Current Job Opportunities
+          <h2 className="text-sm font-bold uppercase tracking-widest text-blue-400 flex items-center gap-2">
+            <Award className="w-5 h-5" /> Available Placements
           </h2>
           
           {loading ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-            </div>
-          ) : jobs.length === 0 ? (
-            <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 text-center text-slate-400">
-              No active job campaigns found. Access the Admin documentation to post roles!
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -126,91 +102,63 @@ export default function CandidateHome() {
                 <div 
                   key={job.id} 
                   onClick={() => setSelectedJob(job)}
-                  className={`bg-slate-800 p-5 rounded-xl border cursor-pointer transition-all ${
+                  className={`bg-slate-800/60 backdrop-blur-sm p-6 rounded-2xl border transition-all cursor-pointer ${
                     selectedJob?.id === job.id 
-                      ? "border-blue-500 ring-2 ring-blue-500/20 shadow-lg" 
-                      : "border-slate-700 hover:border-slate-600 hover:bg-slate-750 shadow"
+                      ? "border-blue-500 bg-slate-800 ring-4 ring-blue-500/10 shadow-xl" 
+                      : "border-slate-700/80 hover:border-slate-600 hover:bg-slate-800/90"
                   }`}
                 >
-                  <h3 className="text-lg font-bold text-white mb-2">{job.title}</h3>
-                  <p className="text-slate-400 text-sm line-clamp-4 leading-relaxed">{job.description}</p>
-                  <div className="mt-4 text-xs font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-1">
-                    <span>Click to view and apply</span>
-                    <span>→</span>
-                  </div>
+                  <h3 className="text-md font-bold text-white mb-2 tracking-tight">{job.title}</h3>
+                  <p className="text-slate-300 text-xs line-clamp-3 leading-relaxed font-medium">{job.description}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right Column: Application Submission Dropzone Panel */}
         <div className="flex flex-col gap-4">
-          <h2 className="text-2xl font-bold tracking-tight text-white">Application Terminal</h2>
-          
-          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl flex flex-col h-fit">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">Submission Gateway</h2>
+          <div className="bg-slate-800/90 backdrop-blur-sm p-6 rounded-2xl border border-slate-700 shadow-2xl flex flex-col h-fit">
             {selectedJob ? (
               <form onSubmit={handleApply} className="space-y-5">
                 <div>
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Target Selection</span>
-                  <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 font-semibold text-white text-sm">
+                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-2">Target Executive Assignment</span>
+                  <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 font-bold text-slate-200 text-xs shadow-inner">
                     {selectedJob.title}
                   </div>
                 </div>
 
-                {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm p-3 rounded-lg">{error}</div>}
-                {message && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm p-3 rounded-lg">{message}</div>}
+                {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs p-3 rounded-xl">{error}</div>}
 
                 <div>
-                  <label htmlFor="cv-upload-field" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Upload CV Resume (PDF only)</label>
-                  <div className="border-2 border-dashed border-slate-600 hover:border-blue-500 rounded-xl p-6 text-center cursor-pointer transition-colors relative bg-slate-900/50">
-                    <input 
-                      id="cv-upload-field"
-                      type="file" 
-                      accept=".pdf" 
-                      onChange={handleFileChange} 
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                    />
-                    <UploadCloud className="w-10 h-10 text-slate-500 mx-auto mb-2" />
+                  <label htmlFor="cv-file-input" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Initialize Profile Upload (PDF format)</label>
+                  <div className="border-2 border-dashed border-slate-700 hover:border-blue-500/50 rounded-2xl p-6 text-center cursor-pointer transition-colors relative bg-slate-900/40">
+                    <input id="cv-file-input" type="file" accept=".pdf" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    <UploadCloud className="w-8 h-8 text-slate-500 mx-auto mb-2" />
                     {cvFile ? (
-                      <div className="flex items-center justify-center gap-1.5 text-emerald-400 font-medium text-sm">
-                        <FileText className="w-4 h-4" />
-                        <span className="truncate max-w-[200px]">{cvFile.name}</span>
+                      <div className="flex items-center justify-center gap-1.5 text-emerald-400 font-medium text-xs bg-emerald-500/10 py-1 px-3 rounded-lg border border-emerald-500/20">
+                        <FileText className="w-3.5 h-3.5" />
+                        <span className="truncate max-w-[150px]">{cvFile.name}</span>
                       </div>
                     ) : (
-                      <div className="text-slate-400 text-sm">
-                        <span className="text-blue-400 font-semibold">Click to browse</span> or drag file here
+                      <div className="text-slate-400 text-xs font-medium">
+                        <span className="text-blue-400 font-bold">Browse local directory</span> or drag file here
                       </div>
                     )}
                   </div>
                 </div>
 
-                <button 
-                  type="submit" 
-                  disabled={submitting || !cvFile}
-                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10 cursor-pointer"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Deploying AI Screening Crews...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 fill-white" />
-                      <span>Submit & Launch AI Interview</span>
-                    </>
-                  )}
+                <button type="submit" disabled={submitting || !cvFile} className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span>Initialize Consultation Suite</span>}
                 </button>
               </form>
             ) : (
-              <div className="text-center py-12 text-slate-400 text-sm leading-relaxed">
-                Select an active position profile from the grid on the left to initialize the submission gateway.
+              <div className="text-center py-12 text-slate-400 font-medium text-xs leading-relaxed max-w-xs mx-auto">
+                Select an available corporate assignment parameter out of the placement registry on the left to unfreeze the uplink gateway.
               </div>
             )}
           </div>
         </div>
-
       </main>
     </div>
   );

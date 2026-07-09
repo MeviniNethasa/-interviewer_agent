@@ -49,9 +49,10 @@ class InterviewCrew():
         def handle_litellm_error(exception):
             global current_key_index
             error_msg = str(exception)
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "Quota" in error_msg:
-                print(f"\n[Warning] Gemini Key Index {current_key_index} exhausted its quota. Rotating...")
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "Quota" in error_msg or "503" in error_msg or "UNAVAILABLE" in error_msg:
+                print(f"\n[Warning] Gemini Key Index {current_key_index} hit a cloud spike ({error_msg}). Rotating key...")
                 current_key_index = (current_key_index + 1) % len(API_KEYS)
+                
                 self._llm_instance.api_key = API_KEYS[current_key_index]
                 os.environ["GEMINI_API_KEY"] = API_KEYS[current_key_index]
                 
