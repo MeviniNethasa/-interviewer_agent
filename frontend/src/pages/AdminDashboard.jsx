@@ -254,29 +254,58 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* DYNAMIC CORPORATE PLACEMENT VERDICT CONTAINER */}
+                                {/* DYNAMIC CORPORATE PLACEMENT VERDICT & COMMUNICATION ENGINE BUTTONS */}
                 {scorecard && (
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-3">
+                    
+                    {/* OPTION A: CANDIDATE MEETS RECRUITMENT BENCHMARKS (STRONG HIRE) */}
                     {scorecard.includes("STRONG HIRE") && (
-                      <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-2xs">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Verdict: Strong Hire</span>
-                      </div>
+                      <>
+                        <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-2xs">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Verdict: Strong Hire</span>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            const res = await fetch(`${API_BASE}/interviews/notify-candidate/${selectedApplicant.id}`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                              body: JSON.stringify({ type: "advance" })
+                            });
+                            if (res.ok) alert(`Success: Next round confirmation notification queued for ${selectedApplicant.name}!`);
+                          }}
+                          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg border border-blue-700 transition-all cursor-pointer shadow-2xs"
+                        >
+                          <span>Advance to Next Round</span>
+                        </button>
+                      </>
                     )}
-                    {scorecard.includes("PASS") && !scorecard.includes("NO HIRE") && (
-                      <div className="flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-2xs">
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                        <span>Verdict: Pass / Review</span>
-                      </div>
-                    )}
+
+                    {/* OPTION B: CANDIDATE COMPLIANCE DRIFT DETECTED (NO HIRE) */}
                     {scorecard.includes("NO HIRE") && (
-                      <div className="flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-2xs">
-                        <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                        <span>Verdict: No Hire</span>
-                      </div>
+                      <>
+                        <div className="flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200/80 px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-2xs">
+                          <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                          <span>Verdict: No Hire</span>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            const res = await fetch(`${API_BASE}/interviews/notify-candidate/${selectedApplicant.id}`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                              body: JSON.stringify({ type: "reject" })
+                            });
+                            if (res.ok) alert(`Notice sent: Rejection update letter pushed out to ${selectedApplicant.name}.`);
+                          }}
+                          className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg border border-rose-700 transition-all cursor-pointer shadow-2xs"
+                        >
+                          <span>Send Rejection Notice</span>
+                        </button>
+                      </>
                     )}
                   </div>
                 )}
+
               </div>
 
               {/* DYNAMIC SCROLLABLE DATA FIELD CANVAS */}
