@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, FileText, UploadCloud, Briefcase, Award, Loader2, Sparkles, Bot } from "lucide-react";
 
+
 export default function CandidateHome() {
   const navigate = useNavigate();
   const userName = localStorage.getItem("user_name") || "Candidate";
@@ -181,10 +182,12 @@ export default function CandidateHome() {
                 <div className="w-full h-40 relative rounded-xl border border-slate-900/80 bg-slate-950/60 p-2 overflow-hidden shadow-inner flex items-center justify-center">
                   <div className="absolute inset-0 bg-emerald-500/5 blur-md rounded-xl pointer-events-none" />
                   <img 
-                    src="https://unsplash.com" 
+                    src="/ai-agent.jpeg" 
                     alt="AI Recruitment Agent" 
-                    className="w-full h-full object-cover rounded-lg mix-blend-screen opacity-80 filter brightness-110 contrast-105"
+                    className="w-full h-full object-cover rounded-lg mix-blend-screen opacity-40 filter brightness-120 scale-[1.05]"
                   />
+
+
                 </div>
 
                 <p className="text-slate-500 font-bold text-[11px] leading-relaxed max-w-[240px] mx-auto uppercase tracking-wider">

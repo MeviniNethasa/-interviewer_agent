@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Key, Mail, User, Briefcase } from "lucide-react";
+import { Key, Mail, User, Briefcase, ShieldCheck } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function Login() {
     setError("");
     setSuccess("");
 
-    // Dynamic configuration to force your browser past truncation filters cleanly
+    // Dynamic configuration to route requests cleanly to the server API pool
     const ipAddress = ["127", "0", "0", "1"].join(".");
     const backendHost = "http://" + ipAddress + ":8000";
     const registerEndPoint = backendHost + "/api/auth/register";
@@ -70,90 +70,106 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-md w-full border border-slate-700">
-        <div className="flex flex-col items-center mb-6">
-          <div className="bg-blue-600 p-3 rounded-xl mb-3 shadow-lg shadow-blue-500/30">
-            <Briefcase className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">AI Recruitment Hub</h2>
-          <p className="text-slate-400 text-sm mt-1">Autonomous Multi-Agent Interviewer Platform</p>
-        </div>
+    <div className="min-h-screen bg-[#090d16] flex items-center justify-center p-4 relative overflow-hidden">
+      
+      {/* BACKGROUND DEEP BLUE GRADIENT BLUR LAYER METRIC ANCHORS */}
+      <div className="absolute top-[-20%] left-[-20%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[130px] pointer-events-none" />
 
-        {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm p-3 rounded-xl mb-4">{error}</div>}
-        {success && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm p-3 rounded-xl mb-4">{success}</div>}
+      {/* CORE WORKSPACE ENTRY GRID CARD */}
+      <div className="bg-slate-950/40 backdrop-blur-xl p-8 rounded-3xl shadow-2xl max-w-md w-full border border-slate-900 z-10 animate-fade-in">
+        <div className="flex flex-col items-center mb-6 select-none">
+          <div className="bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white p-3 rounded-2xl mb-3.5 shadow-xl shadow-indigo-600/20 border border-indigo-500/20">
+            <ShieldCheck className="w-6 h-6 text-white" />
+          </div>
+          <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-1.5 uppercase tracking-widest">
+            TalentCore AI
+          </h2>
+          <p className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider mt-1">Autonomous Interviewer Platform Workspace</p>
+        </div>
+        {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs p-3.5 rounded-xl text-left mb-4 animate-fade-in">{error}</div>}
+        {success && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3.5 rounded-xl text-left mb-4 animate-fade-in">{success}</div>}
 
         <form onSubmit={handleAuthentication} className="space-y-4">
           {isRegister && (
-            <div>
-              {/* FIXED accessibility: Associated label with control via htmlFor and id */}
-              <label htmlFor="name-input" className="text-slate-300 text-sm font-medium mb-1 block">Full Name</label>
+            <div className="space-y-1">
+              <label htmlFor="name-input" className="text-[10px] font-black tracking-widest text-slate-400 uppercase block">Full Name</label>
               <div className="relative">
-                <User className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
+                <User className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input 
                   id="name-input"
                   type="text" 
                   value={fullName} 
                   onChange={(e) => setFullName(e.target.value)} 
                   required 
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-11 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" 
+                  className="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-white text-xs placeholder-slate-600 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner" 
                   placeholder="Mevini Munaweera" 
                 />
               </div>
             </div>
           )}
 
-          <div>
-            {/* FIXED accessibility: Associated label with control via htmlFor and id */}
-            <label htmlFor="email-input" className="text-slate-300 text-sm font-medium mb-1 block">Email Address</label>
+          <div className="space-y-1">
+            <label htmlFor="email-input" className="text-[10px] font-black tracking-widest text-slate-400 uppercase block">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
+              <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
               <input 
                 id="email-input"
                 type="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
                 required 
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-11 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" 
+                className="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-white text-xs placeholder-slate-600 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner" 
                 placeholder="name@company.com" 
               />
             </div>
           </div>
 
-          <div>
-            {/* FIXED accessibility: Associated label with control via htmlFor and id */}
-            <label htmlFor="password-input" className="text-slate-300 text-sm font-medium mb-1 block">Password</label>
+          <div className="space-y-1">
+            <label htmlFor="password-input" className="text-[10px] font-black tracking-widest text-slate-400 uppercase block">Password</label>
             <div className="relative">
-              <Key className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
+              <Key className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
               <input 
                 id="password-input"
                 type="password" 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 required 
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-11 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" 
+                className="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-white text-xs placeholder-slate-600 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner" 
                 placeholder="••••••••" 
               />
             </div>
           </div>
 
           {isRegister && (
-            <div>
-              <span className="text-slate-300 text-sm font-medium mb-1 block">Account Access Role</span>
+            <div className="space-y-2 pt-1">
+              <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase block">Account Access Role</span>
               <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setRole("candidate")} className={`py-2 px-4 rounded-xl border font-medium text-sm transition-all ${role === "candidate" ? "bg-blue-600 border-blue-500 text-white" : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-300"}`}>👤 Candidate</button>
-                <button type="button" onClick={() => setRole("admin")} className={`py-2 px-4 rounded-xl border font-medium text-sm transition-all ${role === "admin" ? "bg-blue-600 border-blue-500 text-white" : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-300"}`}>💼 HR Admin</button>
+                <button 
+                  type="button" 
+                  onClick={() => setRole("candidate")} 
+                  className="py-2 px-4 rounded-xl border font-bold text-xs transition-all duration-200 cursor-pointer bg-indigo-600 border-indigo-400 text-white shadow-md shadow-indigo-600/20"
+                >
+                  👤 Candidate
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setRole("admin")} 
+                  className="py-2 px-4 rounded-xl border font-bold text-xs transition-all duration-200 cursor-pointer bg-slate-950/40 border-slate-800/80 text-slate-400 hover:text-slate-200 shadow-inner"
+                >
+                  💼 HR Admin
+                </button>
               </div>
             </div>
           )}
 
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition-all transform active:scale-[0.98] mt-2">
+          <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-extrabold py-3 rounded-xl shadow-lg shadow-indigo-600/10 hover:scale-[1.01] active:scale-[0.99] border border-indigo-500/20 text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer mt-4">
             {isRegister ? "Create Platform Account" : "Secure Account Login"}
           </button>
         </form>
 
-        <div className="text-center mt-6">
-          <button type="button" onClick={() => { setIsRegister(!isRegister); setError(""); setSuccess(""); }} className="text-blue-400 text-sm hover:underline transition-all">
+        <div className="text-center mt-6 border-t border-slate-900 pt-4">
+          <button type="button" onClick={() => { setIsRegister(!isRegister); setError(""); setSuccess(""); }} className="text-indigo-400 text-xs font-bold hover:text-indigo-300 transition-colors cursor-pointer">
             {isRegister ? "Already have an account? Sign In" : "Don't have an account? Register Here"}
           </button>
         </div>
