@@ -1,54 +1,101 @@
-# InterviewerAgent Crew
+# TalentCore AI — Autonomous Multi-Agent Corporate Recruitment Pipeline
 
-Welcome to the InterviewerAgent Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+An enterprise-grade, full-stack recruitment ecosystem designed to eliminate 
+hiring bias and automate deep technical candidate screening. This platform 
+deploys a decoupled, multi-stage asynchronous multi-agent framework built 
+with **CrewAI, FastAPI (Python 3.12), and React 18**.
 
-## Installation
+---
 
-Ensure you have Python >=3.10 <3.14 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+## 🏗️ System Architecture & Data Flow
 
-First, if you haven't already, install uv:
+TalentCore AI isolates its heavy multi-agent execution context onto background 
+threads using native Python event pools, preventing user interface freezes 
+or connection thread blockages during token processing loops.
 
-```bash
-pip install uv
++----------------------------------------+|    React 18 / Tailwind CSS Client      |+----------------------------+-----------+|v  (REST API / OAuth2 Bearer Tokens)+----------------------------+-----------+|  FastAPI Async Backend Routing Gateway |+----------------------------+-----------+|v  (asyncio.to_thread Event Pools)+-------------------------------------------------------+-------------------------------------------------------+|  AGENTIC COMPLIANCE ORCHESTRATION PIPELINE LOGIC ENGINES                                                      ||                                                                                                               ||  [ Crew 1: Profile Scanners ] ---> [ Crew 2: Cross-Examiners ] ---> [ Crew 3: HR Grading Compliance Panel ]    |+-------------------------------------------------------+-------------------------------------------------------+|v  (LiteLLM Automated Fault-Tolerance Layer)+----------------------------+-----------+|   Google Gemini API Quota  | Multi-Key ||   Multi-Key Rotation Hub   | Fallback  |+----------------------------+-----------+
+
+## 🧠 Multi-Agent Compliance Pipeline
+
+The backend background worker orchestrates three independent CrewAI agent 
+frameworks to cross-examine technical candidate competencies:
+
+1. **Crew 1 (Profile Scanner)**: Triggered instantly upon PDF resume upload. 
+It parses structural text strings, cross-references them against job requirements, 
+identifies background gaps, and drafts 3 highly specific technical scenario queries.
+
+2. **Crew 2 (Cross-Examiner)**: Engages when the candidate submits their primary 
+answers. It dynamically scans responses for superficial engineering buzzwords, 
+cross-checks them against the initial queries, and generates 2 detailed 
+follow-up probing questions.
+
+3. **Crew 3 (HR Grading Compliance Panel)**: Compiles the final evaluation metrics. 
+It grades the candidate across a strict 4-dimension matrix, generates a structured 
+markdown assessment report, and appends deterministic hiring recommendations 
+based on verbatim textual evidence.
+
+---
+
+## 🎨 System Workspaces & UI Innovation
+
+- **The Candidate Pod**: An immersive workspace detailed with a responsive, 
+**GPU-Accelerated CSS Vector Processing Orb** that dynamically transforms its 
+expressions (Thinking, Talking, Celebrating) in real-time based on background 
+agent calculation milestones.
+
+- **Corporate Command Center**: An Indigo Deep-Tech administrative workspace 
+featuring a **Dual-Pane Operations Hub**. It includes **independent component 
+scroll lanes** to keep tracking matrices securely anchored and features 
+**React-Markdown rendering engines** that parse raw text tokens into data grids.
+
+- **Decision Engine Controls**: Interactive header utilities that read the true 
+evaluation scorecard content, automatically displaying an ambient green 
+**"Advance to Next Round"** click action or a red **"Send Rejection Notice"** 
+button to log real-time email dispatch traces in the terminal.
+
+## 📦 Local Workspace Installation & Quickstart
+
+Ensure you have Python >=3.12 and Node.js >=18 installed on your MacBook. This 
+project uses [UV](https://astral.sh) for high-speed package management 
+and environment tracking.
+
+### 1. Configure the Shared Environment (`.env`)
+Create a `.env` file at your backend root directory and add your unnumbered 
+multi-key Gemini API tokens to support automated rate-limit rotation:
+```text
+GEMINI_API_KEY_1=AIzaSy...
+GEMINI_API_KEY_2=AIzaSy...
+GEMINI_API_KEY_3=AIzaSy...
 ```
 
-Next, navigate to your project directory and install the dependencies:
-
-(Optional) Lock the dependencies and install them by using the CLI command:
+### 2. Initialize the Backend Server
 ```bash
-crewai install
+# Navigate to the backend directory context
+cd backend
+
+# Install dependencies and spin up the FastAPI service via UV
+uv run uvicorn backend.app:app --reload --host 0.0.0.0 --port 8000
 ```
-### Customizing
+*Your backend will initialize a persistent SQLite pool and watch for network 
+handshakes on port `8000`.*
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
-
-- Modify `src/interviewer_agent/config/agents.yaml` to define your agents
-- Modify `src/interviewer_agent/config/tasks.yaml` to define your tasks
-- Modify `src/interviewer_agent/crew.py` to add your own logic, tools and specific args
-- Modify `src/interviewer_agent/main.py` to add custom inputs for your agents and tasks
-
-## Running the Project
-
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
-
+### 3. Initialize the Frontend Interface
+Open a second terminal window pane and boot your Vite dev server:
 ```bash
-$ crewai run
+# Navigate to the frontend workspace
+cd frontend
+
+# Install UI modules and launch the client portal
+npm install
+npm run dev
 ```
+*Open your web browser and navigate to `http://localhost:5173/` to log into 
+your client accounts.*
 
-This command initializes the interviewer_agent Crew, assembling the agents and assigning them tasks as defined in your configuration.
-
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
-
-## Understanding Your Crew
-
-The interviewer_agent Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
-
-## Support
-
-For support, questions, or feedback regarding the InterviewerAgent Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
-
-Let's create wonders together with the power and simplicity of crewAI.
+### 🔐 Administrative Compliance Verification Accounts:
+- **HR Administrator Desk Login**:
+  - **Email**: `admin@company.com`
+  - **Password**: `SecurePassword123`
+- **Candidate Interface Suite**: Click register to establish a localized testing 
+profile, upload a text-based PDF resume, and run the complete multi-stage 
+automated consultation pipeline.
