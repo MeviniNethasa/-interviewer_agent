@@ -10,6 +10,7 @@ export default function AdminDashboard() {
   const [applicants, setApplicants] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); 
   const [scorecard, setScorecard] = useState("");
   const [loadingAudit, setLoadingAudit] = useState(false);
   const token = localStorage.getItem("access_token") || localStorage.getItem("token") || "";
@@ -129,38 +130,51 @@ export default function AdminDashboard() {
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
               <input 
                 type="text" 
-                placeholder="Filter corporate pipeline openings..." 
-                className="w-full pl-8 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-hidden focus:border-blue-500 focus:ring-1 placeholder:text-slate-400 shadow-2xs"
+              placeholder="Filter corporate pipeline openings..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              className="w-full pl-8 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-hidden focus:border-blue-500 focus:ring-1 placeholder:text-slate-400 shadow-2xs focus:ring-blue-500/20"
               />
+
             </div>
           </div>
 
-          {/* ACTIVE PLACEMENTS STREAM (Scrolls independently) */}
+                    {/* ACTIVE PLACEMENTS STREAM (Scrolls independently) */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1 select-none">
-            {jobs.map((job) => {
-              const isSelected = selectedJob?.id === job.id;
-              return (
-                <div
-                  key={job.id}
-                  onClick={() => handleJobSelect(job)}
-                  className={`p-3 rounded-xl cursor-pointer text-left transition-all ${
-                    isSelected ? "bg-blue-50/80 border border-blue-200/60" : "hover:bg-slate-50/80 border border-transparent"
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5">
-                    <div className={`p-1.5 rounded-lg border mt-0.5 ${isSelected ? "bg-white border-blue-200 text-blue-600" : "bg-slate-50 border-slate-200"}`}>
-                      <Briefcase className="w-3.5 h-3.5" />
+            {jobs
+              .filter((job) => {
+                const query = searchQuery.toLowerCase().trim();
+                if (!query) return true; // Show all openings if the search input box is empty
+                return (
+                  job.title.toLowerCase().includes(query) || 
+                  job.description.toLowerCase().includes(query)
+                );
+              })
+              .map((job) => {
+                const isSelected = selectedJob?.id === job.id;
+                return (
+                  <div
+                    key={job.id}
+                    onClick={() => handleJobSelect(job)}
+                    className={`p-3 rounded-xl cursor-pointer text-left transition-all ${
+                      isSelected ? "bg-blue-50/80 border border-blue-200/60" : "hover:bg-slate-50/80 border border-transparent"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <div className={`p-1.5 rounded-lg border mt-0.5 ${isSelected ? "bg-white border-blue-200 text-blue-600" : "bg-slate-50 border-slate-200"}`}>
+                        <Briefcase className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate tracking-tight">{job.title}</p>
+                        <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">{job.description}</p>
+                      </div>
+                      {isSelected && <ArrowRight className="w-3.5 h-3.5 text-blue-500 shrink-0 self-center" />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate tracking-tight">{job.title}</p>
-                      <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">{job.description}</p>
-                    </div>
-                    {isSelected && <ArrowRight className="w-3.5 h-3.5 text-blue-500 shrink-0 self-center" />}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
+
 
           {/* SECTION B: APP FUNNEL STREAM SECTOR */}
           <div className="border-t border-slate-200 bg-slate-50 flex flex-col h-[42%]">
