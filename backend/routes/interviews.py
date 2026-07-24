@@ -87,7 +87,6 @@ def get_interview_status(application_id: int, db: Session = Depends(get_db), cur
     return response_data
 
 
-
 @router.post("/submit-primary/{application_id}")
 async def submit_primary_answers(
     application_id: int, 
@@ -105,8 +104,14 @@ async def submit_primary_answers(
     track.status = InterviewStatus.PRIMARY_ANSWERS_SUBMITTED
     db.commit()
 
-    # FIXED: Non-blocking async loop task generation to eliminate background thread freezes
-    asyncio.create_task(run_crew_2_async(track.id, track.application.job.description, track.application.cv_text, primary_text_ans))
+    # FIXED: Added track.primary_questions right before the final raw text response parameter string link
+    asyncio.create_task(run_crew_2_async(
+        track.id, 
+        track.application.job.description, 
+        track.application.cv_text, 
+        track.primary_questions,  # ◄─── Injected context dependency tracking attribute link
+        primary_text_ans
+    ))
     return {"message": "Primary responses logged."}
 
 
@@ -134,3 +139,36 @@ async def submit_followup_answers(
         track.primary_questions, track.primary_answers, track.followup_questions, followup_text_ans
     ))
     return {"message": "Final interview metrics submitted cleanly."}
+
+@router.get("/applications")
+def get_all_applications(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Endpoint: Admin-only gateway to read all active screening pipeline indices safely"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied. Administrator privileges required.")
+    
+    tracks = db.query(InterviewStateTrack).all()
+    
+    records = []
+    for t in tracks:
+        # Fallback tracking names if relationships are unmapped
+        candidate_name = "Assessed Candidate"
+        candidate_email = "candidate@test.com"
+        
+        # Defensive property attribute checks across foreign keys
+        if hasattr(t, 'application') and t.application:
+            if hasattr(t.application, 'user') and t.application.user:
+                candidate_name = getattr(t.application.user, 'name', candidate_name)
+                candidate_email = getattr(t.application.user, 'email', candidate_email)
+            elif hasattr(t.application, 'candidate') and t.application.candidate:
+                candidate_name = getattr(t.application.candidate, 'name', candidate_name)
+                candidate_email = getattr(t.application.candidate, 'email', candidate_email)
+
+        records.append({
+            "id": t.application_id,
+            "name": candidate_name,
+            "email": candidate_email,
+            "status": t.status.value if hasattr(t.status, 'value') else str(t.status),
+            "job_id": getattr(t.application, 'job_id', 1) if t.application else 1
+        })
+        
+    return records

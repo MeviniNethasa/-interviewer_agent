@@ -12,10 +12,12 @@ def _sync_kickoff_crew1(job_desc: str, cv_text: str):
         "primary_answers": "Pending collection in frontend text fields"
     })
 
-def _sync_kickoff_crew2(job_desc: str, cv_text: str, primary_ans: str):
+def _sync_kickoff_crew2(job_desc: str, cv_text: str, prim_q_report: str, primary_ans: str):
+    """FIXED: Now takes and passes down the initial primary questions context variable"""
     return InterviewCrew().followup_generation_crew().kickoff(inputs={
         "cv_text": cv_text,
         "job_description": job_desc,
+        "primary_questions_report": prim_q_report,  # ◄── Essential structural linkage for tasks.yaml
         "primary_answers": primary_ans
     })
 
@@ -34,8 +36,6 @@ async def run_crew_1_async(track_id: int, job_desc: str, cv_text: str):
     """Offloads the heavy CrewAI processing into a separate thread safely to prevent freezes"""
     try:
         print("[BACKEND SYSTEM]: Offloading Crew 1 processing to isolated execution thread...")
-        
-        # FIXED: Runs the crew on an isolated thread while keeping the async event loop active
         result = await asyncio.to_thread(_sync_kickoff_crew1, job_desc, cv_text)
         
         db = SessionLocal()
@@ -49,10 +49,11 @@ async def run_crew_1_async(track_id: int, job_desc: str, cv_text: str):
     except Exception as err:
         print(f"[CRITICAL ERROR IN CREW 1 RUNNER]: {err}")
 
-async def run_crew_2_async(track_id: int, job_desc: str, cv_text: str, primary_ans: str):
+async def run_crew_2_async(track_id: int, job_desc: str, cv_text: str, prim_q_report: str, primary_ans: str):
+    """FIXED: Accepts 5 full matching structural properties to bypass internal token crashes"""
     try:
         print("[BACKEND SYSTEM]: Offloading Crew 2 processing to isolated execution thread...")
-        result = await asyncio.to_thread(_sync_kickoff_crew2, job_desc, cv_text, primary_ans)
+        result = await asyncio.to_thread(_sync_kickoff_crew2, job_desc, cv_text, prim_q_report, primary_ans)
         
         db = SessionLocal()
         track = db.query(InterviewStateTrack).filter(InterviewStateTrack.id == track_id).first()
@@ -60,7 +61,7 @@ async def run_crew_2_async(track_id: int, job_desc: str, cv_text: str, primary_a
             track.followup_questions = result.raw
             track.status = InterviewStatus.FOLLOWUP_QUESTIONS_READY
             db.commit()
-            print("[BACKEND SYSTEM SUCCESS]: Crew 2 execution complete.")
+            print("[BACKEND SYSTEM SUCCESS]: Crew 2 execution complete. State advanced to FOLLOWUP_QUESTIONS_READY.")
         db.close()
     except Exception as err:
         print(f"[CRITICAL ERROR IN CREW 2 RUNNER]: {err}")
