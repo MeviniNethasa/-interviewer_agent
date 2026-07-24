@@ -13,7 +13,33 @@ TalentCore AI isolates its heavy multi-agent execution context onto background
 threads using native Python event pools, preventing user interface freezes 
 or connection thread blockages during token processing loops.
 
-+----------------------------------------+|    React 18 / Tailwind CSS Client      |+----------------------------+-----------+|v  (REST API / OAuth2 Bearer Tokens)+----------------------------+-----------+|  FastAPI Async Backend Routing Gateway |+----------------------------+-----------+|v  (asyncio.to_thread Event Pools)+-------------------------------------------------------+-------------------------------------------------------+|  AGENTIC COMPLIANCE ORCHESTRATION PIPELINE LOGIC ENGINES                                                      ||                                                                                                               ||  [ Crew 1: Profile Scanners ] ---> [ Crew 2: Cross-Examiners ] ---> [ Crew 3: HR Grading Compliance Panel ]    |+-------------------------------------------------------+-------------------------------------------------------+|v  (LiteLLM Automated Fault-Tolerance Layer)+----------------------------+-----------+|   Google Gemini API Quota  | Multi-Key ||   Multi-Key Rotation Hub   | Fallback  |+----------------------------+-----------+
+```text
++-----------------------------------------------------------------------+
+
+|                    React 18 / Tailwind CSS Client                     |
++-----------------------------------+-----------------------------------+
+                                    |
+                                    v  (REST API / OAuth2 Bearer Tokens)
++-----------------------------------+-----------------------------------+
+
+|               FastAPI Async Backend Routing Gateway                   |
++-----------------------------------+-----------------------------------+
+                                    |
+                                    v  (asyncio.to_thread Event Pools)
++-----------------------------------+-----------------------------------+
+
+|       AGENTIC COMPLIANCE ORCHESTRATION PIPELINE LOGIC ENGINES         |
+|                                                                       |
+| [ Crew 1: Scanners ] -> [ Crew 2: Examiners ] -> [ Crew 3: Graders ]  |
++-----------------------------------+-----------------------------------+
+                                    |
+                                    v  (LiteLLM Automated Fallback)
++-----------------------------------+-----------------------------------+
+
+|      Google Gemini API Quota Multi-Key Rotation Management Hub        |
++-----------------------------------------------------------------------+
+```
+
 
 ## 🧠 Multi-Agent Compliance Pipeline
 
